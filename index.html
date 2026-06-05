@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EaglerArchive</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #0f1117;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 30px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      background: #171a23;
+      border: 1px solid #2a2f3d;
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    h1 {
+      font-size: 34px;
+      margin-bottom: 30px;
+    }
+
+    .section {
+      margin-bottom: 28px;
+    }
+
+    .section h2 {
+      font-size: 18px;
+      margin-bottom: 14px;
+      color: #e8ebf5;
+    }
+
+    .type-buttons,
+    .version-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .type-buttons {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .version-grid {
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    }
+
+    button,
+    .action {
+      border: none;
+      cursor: pointer;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-weight: bold;
+      transition: 0.15s ease;
+      text-decoration: none;
+      text-align: center;
+      display: block;
+    }
+
+    .choice {
+      background: #222738;
+      color: white;
+      border: 1px solid #33394d;
+    }
+
+    .choice:hover {
+      background: #2c3348;
+    }
+
+    .choice.active {
+      background: #4f7cff;
+      border-color: #4f7cff;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .play {
+      background: #35c46f;
+      color: #06140b;
+    }
+
+    .download {
+      background: #4f7cff;
+      color: white;
+    }
+
+    .info-box {
+      background: #11141c;
+      border: 1px solid #2a2f3d;
+      border-radius: 14px;
+      padding: 16px;
+      color: #b7bed0;
+      line-height: 1.5;
+    }
+
+    .selected {
+      color: white;
+      font-weight: bold;
+    }
+
+    .small-link {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #8e96aa;
+      word-break: break-all;
+    }
+
+    footer {
+      margin-top: 24px;
+      color: #777f94;
+      font-size: 13px;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    footer strong {
+      color: #b8c0d8;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 18px;
+      }
+
+      h1 {
+        font-size: 27px;
+      }
+
+      .type-buttons,
+      .actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="container">
+    <h1>EaglerArchive</h1>
+
+    <div class="section">
+      <h2>1. Choose build type</h2>
+      <div class="type-buttons">
+        <button class="choice active" onclick="setType('js')" id="type-js">JavaScript</button>
+        <button class="choice" onclick="setType('WASM')" id="type-wasm">WASM</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>2. Choose version</h2>
+      <div class="version-grid" id="versionGrid"></div>
+    </div>
+
+    <div class="section">
+      <h2>3. Launch or download</h2>
+
+      <div class="info-box">
+        Selected:
+        <span class="selected" id="selectedText">JavaScript - Indev</span>
+
+        <div class="small-link" id="pathText">
+          /js/Indev/index.html
+        </div>
+      </div>
+
+      <div class="actions">
+        <a class="action play" id="playButton" href="#" target="_blank" rel="noopener noreferrer">
+          Start Playing
+        </a>
+
+        <button class="action download" id="downloadButton" onclick="downloadSelectedFile()">
+          Download HTML
+        </button>
+      </div>
+    </div>
+
+    <footer>
+      <strong>Credits:</strong> Eaglercraft was created by lax1dude and its contributors.
+      <br />
+      EaglerArchive is an unofficial test hub for organizing playable HTML versions.
+      <br />
+      Minecraft is owned by Mojang Studios and Microsoft. This site is not affiliated with Mojang, Microsoft, or the official Eaglercraft project.
+    </footer>
+  </main>
+
+  <script>
+    const SITE_BASE = "https://minecraft.lowframe.site";
+    const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/GroupDev-Web/OfflineMinecraft/main";
+
+    const versions = [
+      {
+        type: "js",
+        label: "JavaScript",
+        version: "Indev"
+      },
+      {
+        type: "js",
+        label: "JavaScript",
+        version: "Beta"
+      },
+      {
+        type: "js",
+        label: "JavaScript",
+        version: "1.5.2"
+      },
+      {
+        type: "js",
+        label: "JavaScript",
+        version: "1.8.8"
+      },
+      {
+        type: "js",
+        label: "JavaScript",
+        version: "1.12.2"
+      },
+      {
+        type: "WASM",
+        label: "WASM",
+        version: "1.8.8"
+      },
+      {
+        type: "WASM",
+        label: "WASM",
+        version: "1.12.2"
+      }
+    ];
+
+    let currentType = "js";
+    let currentVersion = null;
+
+    const versionGrid = document.getElementById("versionGrid");
+    const selectedText = document.getElementById("selectedText");
+    const pathText = document.getElementById("pathText");
+    const playButton = document.getElementById("playButton");
+
+    function getFilePath(item) {
+      return `/${item.type}/${item.version}/index.html`;
+    }
+
+    function getPlayUrl(item) {
+      return SITE_BASE + getFilePath(item);
+    }
+
+    function getRawUrl(item) {
+      return GITHUB_RAW_BASE + getFilePath(item);
+    }
+
+    function setType(type) {
+      currentType = type;
+
+      document.getElementById("type-js").classList.toggle("active", type === "js");
+      document.getElementById("type-wasm").classList.toggle("active", type === "WASM");
+
+      renderVersions();
+    }
+
+    function renderVersions() {
+      versionGrid.innerHTML = "";
+
+      const filteredVersions = versions.filter(item => item.type === currentType);
+
+      filteredVersions.forEach((item, index) => {
+        const button = document.createElement("button");
+        button.className = "choice";
+        button.textContent = item.version;
+
+        button.onclick = () => {
+          currentVersion = item;
+          updateSelection();
+
+          document.querySelectorAll(".version-grid .choice").forEach(btn => {
+            btn.classList.remove("active");
+          });
+
+          button.classList.add("active");
+        };
+
+        versionGrid.appendChild(button);
+
+        if (index === 0) {
+          currentVersion = item;
+
+          setTimeout(() => {
+            button.classList.add("active");
+            updateSelection();
+          }, 0);
+        }
+      });
+    }
+
+    function updateSelection() {
+      if (!currentVersion) return;
+
+      selectedText.textContent = `${currentVersion.label} - ${currentVersion.version}`;
+      pathText.textContent = getFilePath(currentVersion);
+      playButton.href = getPlayUrl(currentVersion);
+    }
+
+    async function downloadSelectedFile() {
+      if (!currentVersion) return;
+
+      const rawUrl = getRawUrl(currentVersion);
+      const fileName = `${currentVersion.type}-${currentVersion.version}.html`;
+
+      try {
+        const response = await fetch(rawUrl);
+
+        if (!response.ok) {
+          throw new Error("File could not be downloaded.");
+        }
+
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+
+        link.remove();
+        URL.revokeObjectURL(blobUrl);
+      } catch (error) {
+        window.open(rawUrl, "_blank", "noopener,noreferrer");
+      }
+    }
+
+    renderVersions();
+  </script>
+
+</body>
+</html>
